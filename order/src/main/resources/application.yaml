@@ -1,0 +1,42 @@
+spring:
+  application:
+    name: order
+
+  datasource:
+    url: jdbc:mysql://mysql.default.svc.cluster.local:3306/microservices?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+    username: root
+    password: chanochoca
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+
+  kafka:
+    bootstrap-servers: my-cluster-kafka-bootstrap.kafka.svc.cluster.local:9092
+
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      inventory:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10000
+  timelimiter:
+    instances:
+      inventory:
+        timeoutDuration: 2s
+  retry:
+    instances:
+      inventory:
+        maxAttempts: 3
+        waitDuration: 500ms

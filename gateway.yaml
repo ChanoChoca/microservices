@@ -1,0 +1,84 @@
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: api-gateway
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+    - port:
+        number: 80
+        name: http
+        protocol: HTTP
+      hosts:
+        - "*"
+---
+apiVersion: security.istio.io/v1beta1
+kind: RequestAuthentication
+metadata:
+  name: jwt-auth
+  namespace: istio-system
+spec:
+  selector:
+    matchLabels:
+      istio: ingressgateway
+  jwtRules:
+    - issuer: "http://localhost:30080/realms/microservices"
+      jwksUri: "http://keycloak.default.svc.cluster.local:8080/realms/microservices/protocol/openid-connect/certs"
+---
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: require-jwt
+  namespace: istio-system
+spec:
+  selector:
+    matchLabels:
+      istio: ingressgateway
+  rules:
+    - from:
+        - source:
+            requestPrincipals: ["*"]
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: api-routes
+spec:
+  hosts:
+    - "*"
+  gateways:
+    - api-gateway
+  http:
+    - match:
+        - uri:
+            prefix: /orders
+      route:
+        - destination:
+            host: order-service
+            port:
+              number: 80
+    - match:
+        - uri:
+            prefix: /products
+      route:
+        - destination:
+            host: product-service
+            port:
+              number: 80
+    - match:
+        - uri:
+            prefix: /inventory
+      route:
+        - destination:
+            host: inventory-service
+            port:
+              number: 80
+    - match:
+        - uri:
+            prefix: /notifications
+      route:
+        - destination:
+            host: notification-service
+            port:
+              number: 80

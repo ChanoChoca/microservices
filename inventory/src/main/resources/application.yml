@@ -1,0 +1,16 @@
+spring:
+  application:
+    name: inventory
+
+  datasource:
+    url: jdbc:mysql://mysql.default.svc.cluster.local:3306/microservices?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+    username: root
+    password: chanochoca
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
